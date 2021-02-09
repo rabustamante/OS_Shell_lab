@@ -27,17 +27,14 @@ def redirc(command,child):
             except:
                 pass
 def pipes(command, child):
-    commands = command.split()
-    commands[0] = os.pipe()
-    commands[2] = os.pipe()
-    for f in (commands[0], commands[2]):
-        os.set_inheritable(1,True)
-    os.close(1)
-    os.dup(command[2])
-    for df in (commands[0], commands[2]):
-           os.close(fd)
-    print(df)
-    
+    commands = os.pipe()
+    if child == 0:
+        os.dup(commands[0]. STDIN)
+        os.close(commands[0])
+        os.close(commands[-1])
+        if(os.excev(commands[0]. commands)<0):
+            sys.exit(1)
+        os.execv(commands[0], commands)
         
 def main():
     command = ' '
