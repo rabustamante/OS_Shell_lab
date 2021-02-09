@@ -2,42 +2,65 @@
 # Ruben Bustamante, OS, 02/26/2021
 
 import os, sys, re
-def exec_command(command):
-    child = os.fork()
+def exec_command(command, child):
+    
+    if child == 0:
+        commands = command.split()
+        for dir in re.split(":", os.environ['PATH']):
+            possbile_path = "%s/%s" % (dir, commands[0])
+            try:
+                os.execve(possbile_path, commands, os.environ)
+            except:
+                pass
+
+        
+def redirc(command,child):
     commands = command.split()
     if child == 0:
+        os.close(STDOUT)
+        os.open(command[1].strip(), os.O_CREAT | os.O_WRONLY)
+        os.set_inheritable(STDOUT, True)
         for dir in re.split(":", os.environ['PATH']):
             possbile_path = "%s/%s" % (dir, commands[0])
             try:
-                os.execve(possbile_path, commands, os.environ)
+               os.execve(possbile_path, commands, os.environ)
             except:
                 pass
-    else:
-        os.waitpid(child,0)
-        child2 = os.fork()
-    if commands =='>' or child2 ==0:
-        print('b', commands)
-        child2 =os.fork()
-        os.open(commands[-1], os.O_CREAT | os.O_WRONLY)
+def pipes(command, child):
+    commands = command.split()
+    commands[0] = os.pipe()
+    commands[2] = os.pipe()
+    for f in (commands[0], commands[2]):
         os.set_inheritable(1,True)
-        for dir in re.split(":", os.environ['PATH']):
-            possbile_path = "%s/%s" % (dir, commands[0])
-            try:
-                os.execve(possbile_path, commands, os.environ)
-            except:
-                pass
-    else:
-        os.waitpid(child2,0)
-
-                       
+    os.close(1)
+    os.dup(command[2])
+    for df in (commands[0], commands[2]):
+           os.close(fd)
+    print(df)
+    
+        
 def main():
-    command = ''
+    command = ' '
     while(1):
         command = input(" $$$ ")
-        if command == 'exit':
+        commands = command.split()
+        if commands[0]== 'cd':
+            child = os.fork()
+            os.chdir(exec_command(command, child))
+        if commands[0]!='exit':
+            child = os.fork()
+            exec_command(command, child)
+            os.wait()
+        if commands[0] == '<' or commands[0] =='>':
+            child =os.fork()
+            redirc(command, child)
+            os.wait()
+        if commands[1] == '|':
+            child = os.fork()
+            pipes(command,child)
+            os.wait()
+        if commands[0] == 'exit':
             break
-        else:
-            exec_command(command)
-    
-    sys.exit(1)
+            
+        sys.exit(1)
 main()
