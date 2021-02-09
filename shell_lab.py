@@ -32,32 +32,31 @@ def pipes(command, child):
         os.dup(commands[0]. STDIN)
         os.close(commands[0])
         os.close(commands[-1])
-        if(os.excev(commands[0]. commands)<0):
-            sys.exit(1)
         os.execv(commands[0], commands)
+        
         
 def main():
     command = ' '
     while(1):
+        
         command = input(" $$$ ")
-        commands = command.split()
-        if commands[0]== 'cd':
+
+        if command== 'cd':
             child = os.fork()
             os.chdir(exec_command(command, child))
-        if commands[0]!='exit':
+        if command != 'exit':
             child = os.fork()
             exec_command(command, child)
             os.wait()
-        if commands[0] == '<' or commands[0] =='>':
+        if command == '<' or command =='>':
             child =os.fork()
             redirc(command, child)
             os.wait()
-        if commands[1] == '|':
+        if command == '|':
             child = os.fork()
             pipes(command,child)
             os.wait()
-        if commands[0] == 'exit':
+        else:
             break
-            
-        sys.exit(1)
+    sys.exit(1)
 main()
